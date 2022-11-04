@@ -1,0 +1,8 @@
+{
+  "jupyter.lab.shortcuts": [],
+  "title": "jupyterlab-universal-extension",
+  "description": "jupyterlab-universal-extension settings.",
+  "type": "object",
+  "properties": {},
+  "additionalProperties": false
+}
