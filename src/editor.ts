@@ -7,6 +7,7 @@ import { GalyleoModel } from './index';
 import { PLUGIN_ID } from './index';
 // import { baseURL } from './constants';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
+import { CodeEditor } from '@jupyterlab/codeeditor';
 
 export class GalyleoDocument extends DocumentWidget<
   GalyleoEditor,
@@ -19,7 +20,10 @@ const debugMode = false;
 export class GalyleoEditor extends Widget {
   private _iframe: HTMLIFrameElement;
   private _context: DocumentRegistry.IContext<GalyleoModel>;
-  private _nullSave = (value: boolean) => {};
+  private _nullSave = (value: boolean) => {
+    return;
+  };
+  // eslint-disable-next-line @typescript-eslint/ban-types
   private _completeSave: Function = this._nullSave;
   private _settings: ISettingRegistry;
 
@@ -32,8 +36,9 @@ export class GalyleoEditor extends Widget {
     this.node.appendChild(this._iframe);
     this.node.onmouseleave = () => (this._iframe.style.pointerEvents = 'none');
     this.node.onmousemove = (evt: MouseEvent) => {
-      if (document.getElementsByClassName('lm-Menu-content').length == 0)
+      if (document.getElementsByClassName('lm-Menu-content').length === 0) {
         this._iframe.style.pointerEvents = 'auto';
+      }
     };
 
     void this._context.ready.then(async () => {
@@ -45,11 +50,11 @@ export class GalyleoEditor extends Widget {
     );
   }
 
-  get model() {
+  get model(): GalyleoModel {
     return this._context.model;
   }
 
-  onAfterShow() {
+  onAfterShow(): void {
     // fix the labs in the scene that have been update while hidden
     this._iframe.contentWindow?.postMessage(
       { method: 'galyleo:fixLabels' },
@@ -57,17 +62,17 @@ export class GalyleoEditor extends Widget {
     );
   }
 
-  get editor() {
+  get editor(): GalyleoEditor {
     return this;
   }
 
-  completeSave() {
-    if (this._completeSave != this._nullSave) {
+  completeSave(): void {
+    if (this._completeSave !== this._nullSave) {
       this._completeSave(true);
     }
   }
 
-  async requestSave(path: string) {
+  async requestSave(path: string): Promise<void> {
     this._iframe.contentWindow?.postMessage(
       { method: 'galyleo:save', path },
       '*'
@@ -75,14 +80,14 @@ export class GalyleoEditor extends Widget {
     await new Promise(resolve => (this._completeSave = resolve));
   }
 
-  loadDashboard(jsonString: string) {
+  loadDashboard(jsonString: string): void {
     this._iframe.contentWindow?.postMessage(
       { method: 'galyleo:load', jsonString },
       '*'
     );
   }
 
-  loadTable(table: any) {
+  loadTable(table: any): void {
     // table is a dictionary, how do we say that?
     this._iframe.contentWindow?.postMessage(
       { method: 'galyleo:loadTable', table },
@@ -90,7 +95,7 @@ export class GalyleoEditor extends Widget {
     );
   }
 
-  renamePath(path: string) {
+  renamePath(path: string): void {
     this._iframe.contentWindow?.postMessage(
       { method: 'galyleo:rename', path },
       '*'
@@ -99,11 +104,11 @@ export class GalyleoEditor extends Widget {
 
   // we are the receivers of the undo/redo commands
 
-  undo() {
+  undo(): void {
     this._iframe.contentWindow?.postMessage({ method: 'galyleo:undo' }, '*');
   }
 
-  redo() {
+  redo(): void {
     this._iframe.contentWindow?.postMessage({ method: 'galyleo:redo' }, '*');
   }
 
@@ -146,20 +151,17 @@ export class GalyleoEditor extends Widget {
 
     const urls: modeType = {
       deploy: {
-        en:
-          'https://matt.engageLively.com/users/rick/published/studio/index.html?',
+        en: 'https://matt.engageLively.com/users/rick/published/studio/index.html?',
         ja_JP:
           'https://matt.engageLively.com/users/rick/published/studio/index.html?'
       },
       beta: {
-        en:
-          'https://matt.engageLively.com/users/rick/published/studio/index.html?',
+        en: 'https://matt.engageLively.com/users/rick/published/studio/index.html?',
         ja_JP:
           'https://matt.engageLively.com/users/rick/published/studio/index.html?'
       },
       debug: {
-        en:
-          'https://matt.engageLively.com/worlds/load?name=Dashboard%20Studio%20Development&',
+        en: 'https://matt.engageLively.com/worlds/load?name=Dashboard%20Studio%20Development&',
         ja_JP:
           'https://matt.engagelively.com/worlds/load?name=Dashboard%20Studio%20Development%E3%80%80JP&'
       }
@@ -179,7 +181,7 @@ export class GalyleoEditor extends Widget {
     return urls[mode][preference];
   }
 
-  async _render() {
+  async _render(): Promise<void> {
     // now set the src accordingly on the iframe....?
     const filePath = this._context.path;
     const sessionId = this._context.model.session;
@@ -200,8 +202,23 @@ export class GalyleoEditor extends Widget {
     // wait for session to load
   }
 
-  setOption(key: any, value: any): void {
+  setOption(key: string, value: any): void {
     // do nothingß
+  }
+
+  setOptions(options: Partial<CodeEditor.IConfig>): void {
+    // do nothingß
+  }
+
+  getCursorPosition(): CodeEditor.IPosition {
+    return {
+      line: 0,
+      column: 0
+    };
+  }
+
+  getLine(lineNumber: number): string | null {
+    return null;
   }
 }
 
