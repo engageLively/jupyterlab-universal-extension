@@ -220,6 +220,10 @@ export class GalyleoEditor extends Widget {
   getLine(lineNumber: number): string | null {
     return null;
   }
+
+  get host(): HTMLElement {
+    return this._iframe;
+  }
 }
 
 /**
