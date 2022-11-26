@@ -119,3 +119,7 @@ dmypy.json
 
 .devcontainer
 yarn.lock
+
+test
+
+*.gd.json
