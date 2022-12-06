@@ -210,7 +210,10 @@ export class GalyleoStudioFactory extends ABCWidgetFactory<
         const doc: GalyleoDocument = this._getDocumentForFilePath(
           evt.data.dashboardFilePath
         );
-        doc.content.loadDashboard(doc.context.model.value.text); // load the dashboard
+        // doc.content.loadDashboard(doc.context.model.value.text); // load the dashboard
+        const dashboardStruct: string =
+          doc.content.model.sharedModel.getSource();
+        doc.content.loadDashboard(dashboardStruct);
       },
       'galyleo:requestSave': async (evt: MessageEvent) => {
         // the dashboard uses this to request a save
