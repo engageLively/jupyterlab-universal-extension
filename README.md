@@ -6,7 +6,7 @@ A general plugin which permits a third-party editor to be integrated into Jupyte
 
 ## Requirements
 
-- JupyterLab >= 3.0
+- JupyterLab == 3.5.  *Note that, due to the dynamic nature of the JupyterLab API, we are currently tied to a highly specific version of JupyterLab*
 
 ## Install
 
