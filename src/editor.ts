@@ -2,8 +2,11 @@
 // Distributed under the terms of the Modified BSD License.
 
 import { Widget } from '@lumino/widgets';
-import { DocumentRegistry, DocumentWidget } from '@jupyterlab/docregistry';
-import { GalyleoModel } from './index';
+import {
+  DocumentRegistry,
+  DocumentWidget,
+  DocumentModel
+} from '@jupyterlab/docregistry';
 import { PLUGIN_ID } from './index';
 // import { baseURL } from './constants';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
@@ -11,7 +14,7 @@ import { CodeEditor } from '@jupyterlab/codeeditor';
 
 export class GalyleoDocument extends DocumentWidget<
   GalyleoEditor,
-  GalyleoModel
+  DocumentModel
 > {}
 
 // overwritten post-compile and pre-deploy.  DO NOT MODIFY IN THIS CODE!  See make.sh in the directory above
@@ -19,7 +22,7 @@ const debugMode = false;
 
 export class GalyleoEditor extends Widget {
   private _iframe: HTMLIFrameElement;
-  private _context: DocumentRegistry.IContext<GalyleoModel>;
+  private _context: DocumentRegistry.IContext<DocumentModel>;
   private _nullSave = (value: boolean) => {
     return;
   };
@@ -29,6 +32,7 @@ export class GalyleoEditor extends Widget {
 
   constructor(options: GalyleoEditor.IOptions) {
     super();
+    console.log('Galyleo Editor constructed');
     this._context = options.context;
     this._settings = options.settings;
     this._iframe = document.createElement('iframe');
@@ -50,7 +54,7 @@ export class GalyleoEditor extends Widget {
     );
   }
 
-  get model(): GalyleoModel {
+  get model(): DocumentModel {
     return this._context.model;
   }
 
@@ -134,6 +138,7 @@ export class GalyleoEditor extends Widget {
     type languagePreferenceType = {
       en: string;
       ja_JP: string;
+      'default': string
     };
 
     type modeType = {
@@ -144,7 +149,8 @@ export class GalyleoEditor extends Widget {
 
     // Set up the defaults for language and mode
 
-    let preference: keyof languagePreferenceType = 'en';
+    const defaultPreference: keyof languagePreferenceType = 'en';
+    let preference: keyof languagePreferenceType = defaultPreference;
     let mode: keyof modeType = 'deploy';
 
     // URLS by language and mode
@@ -153,17 +159,23 @@ export class GalyleoEditor extends Widget {
       deploy: {
         en: 'https://matt.engageLively.com/users/rick/published/studio/index.html?',
         ja_JP:
+          'https://matt.engageLively.com/users/rick/published/studio/index.html?',
+        'default':
           'https://matt.engageLively.com/users/rick/published/studio/index.html?'
       },
       beta: {
         en: 'https://matt.engageLively.com/users/rick/published/studio/index.html?',
         ja_JP:
+          'https://matt.engageLively.com/users/rick/published/studio/index.html?',
+        'default':
           'https://matt.engageLively.com/users/rick/published/studio/index.html?'
       },
       debug: {
         en: 'https://matt.engageLively.com/worlds/load?name=Dashboard%20Studio%20Development&',
         ja_JP:
-          'https://matt.engagelively.com/worlds/load?name=Dashboard%20Studio%20Development%E3%80%80JP&'
+          'https://matt.engagelively.com/worlds/load?name=Dashboard%20Studio%20Development%E3%80%80JP&',
+        'default':
+          'https://matt.engageLively.com/users/rick/published/studio/index.html?'
       }
     };
 
@@ -174,9 +186,13 @@ export class GalyleoEditor extends Widget {
         mode = galyleoSettings.get('mode').composite as keyof modeType;
       }
     }
+
     if (languagePreference) {
       preference = languagePreference.get('locale')
         .composite as keyof languagePreferenceType;
+    }
+    if (preference === undefined) {
+      preference = defaultPreference;
     }
     return urls[mode][preference];
   }
@@ -184,7 +200,7 @@ export class GalyleoEditor extends Widget {
   async _render(): Promise<void> {
     // now set the src accordingly on the iframe....?
     const filePath = this._context.path;
-    const sessionId = this._context.model.session;
+    // const sessionId = this._context.model.session;
     // dig out the user from the URL; it will be the component of the path with an @ in it
     const parentUrl = window.location.href;
     const components = parentUrl.split('/');
@@ -198,16 +214,17 @@ export class GalyleoEditor extends Widget {
     //   'https://matt.engagelively.com/worlds/load?name=Dashboard%20Studio%20Development&';
     // both of these are defined in constants.ts, NOT versioned to avoid bogus changes and stashes.
     const baseURL = await this._baseUrl();
-    this._iframe.src = `${baseURL}dashboard_file=${filePath}&session=${sessionId}&inJupyterLab=true&user=${user}`;
+    // this._iframe.src = `${baseURL}dashboard_file=${filePath}&session=${sessionId}&inJupyterLab=true&user=${user}`;
+    this._iframe.src = `${baseURL}dashboard_file=${filePath}&inJupyterLab=true&user=${user}`;
     // wait for session to load
   }
 
   setOption(key: string, value: any): void {
-    // do nothingß
+    // do nothing
   }
 
   setOptions(options: Partial<CodeEditor.IConfig>): void {
-    // do nothingß
+    // do nothing
   }
 
   getCursorPosition(): CodeEditor.IPosition {
@@ -238,7 +255,7 @@ export namespace GalyleoEditor {
      * Application document manager.
      */
     // docmanager: IDocumentManager;
-    context: DocumentRegistry.IContext<GalyleoModel>;
+    context: DocumentRegistry.IContext<DocumentModel>;
     settings: ISettingRegistry;
 
     /**

@@ -23,138 +23,23 @@ import { ILauncher } from '@jupyterlab/launcher';
 import { IFileBrowserFactory } from '@jupyterlab/filebrowser';
 import { IMainMenu } from '@jupyterlab/mainmenu';
 import {
-  TextModelFactory,
   DocumentRegistry,
-  ABCWidgetFactory
+  ABCWidgetFactory,
+  DocumentModel
 } from '@jupyterlab/docregistry';
-import { Contents } from '@jupyterlab/services';
+
 import { LabIcon } from '@jupyterlab/ui-components'; // WTF???
 import galyleoSvgstr from '../style/engageLively.svg';
-import { CodeEditor } from '@jupyterlab/codeeditor';
-import { JSONValue } from '@lumino/coreutils';
-import { Signal } from '@lumino/signaling';
-import { IModelDB } from '@jupyterlab/observables';
-import { UUID } from '@lumino/coreutils';
+
 import { GalyleoCommunicationsManager } from './manager';
 import { Menu } from '@lumino/widgets';
-import * as models from '@jupyterlab/shared-models';
+
 import {
   nullTranslator,
   ITranslator,
   TranslationBundle
 } from '@jupyterlab/translation';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
-import { YFile } from '@jupyterlab/shared-models';
-
-export class GalyleoModel
-  extends CodeEditor.Model
-  implements DocumentRegistry.ICodeModel
-{
-  contentChanged: any;
-  stateChanged: any;
-  // sharedModel: models.ISharedFile;
-  sharedModel: models.YFile;
-
-  readOnly = false;
-  // we dont need those
-  defaultKernelName = '';
-  defaultKernelLanguage = '';
-
-  session: string;
-  _dirty = false;
-
-  constructor(options?: CodeEditor.Model.IOptions) {
-    super(options);
-    this.value; // this contains the json as a string as soon as its loaded
-    this.session = UUID.uuid4(); // could be we dont even need that one...
-    this.contentChanged = new Signal(this);
-    this.stateChanged = new Signal(this);
-    this.sharedModel = new YFile();
-  }
-
-  get dirty(): any {
-    return this._dirty;
-  }
-
-  set dirty(newValue: any) {
-    const oldValue = this._dirty;
-    this._dirty = newValue;
-    if (oldValue !== newValue) {
-      this.stateChanged.emit({ name: 'dirty', oldValue, newValue });
-    }
-  }
-
-  get defaultValue(): string {
-    return JSON.stringify({ tables: {}, views: {}, charts: {}, filters: {} });
-  }
-
-  toString(): string {
-    return JSON.stringify(this.toJSON());
-  }
-  fromString(value: string): void {
-    if (value === '') {
-      value = this.defaultValue;
-    }
-    this.value.text = value;
-  }
-  toJSON(): JSONValue {
-    // get json snapshot from
-
-    let jsonString = this.value.text;
-    if (jsonString === '') {
-      jsonString = this.defaultValue;
-    }
-    return JSON.parse(jsonString);
-  }
-
-  fromJSON(dashboard: any): void {
-    this.fromString(JSON.stringify(dashboard));
-  }
-  initialize(): void {
-    // send data to iframe
-  }
-}
-
-/**
- * An implementation of a model factory for base64 files.
- */
-export class GalyleoModelFactory extends TextModelFactory {
-  /**
-   * The name of the model type.
-   *
-   * #### Notes
-   * This is a read-only property.
-   */
-  get name(): string {
-    return 'galyleo';
-  }
-
-  /**
-   * The type of the file.
-   *
-   * #### Notes
-   * This is a read-only property.
-   */
-  get contentType(): Contents.ContentType {
-    return 'file';
-  }
-
-  /**
-   * The format of the file.
-   *
-   * This is a read-only property.
-   */
-  get fileFormat(): Contents.FileFormat {
-    return 'text';
-  }
-
-  createNew(
-    languagePreference?: string | undefined,
-    modelDb?: IModelDB
-  ): GalyleoModel {
-    return new GalyleoModel();
-  }
-}
 
 declare type StudioHandler =
   | 'galyleo:writeFile'
@@ -172,7 +57,7 @@ namespace GalyleoStudioFactory {
 
 export class GalyleoStudioFactory extends ABCWidgetFactory<
   GalyleoDocument,
-  GalyleoModel
+  DocumentModel
 > {
   /**
    * Construct a new mimetype widget factory.
@@ -240,13 +125,14 @@ export class GalyleoStudioFactory extends ABCWidgetFactory<
    * Create a new widget given a context.
    */
   createNewWidget(
-    context: DocumentRegistry.IContext<GalyleoModel>
+    context: DocumentRegistry.IContext<DocumentModel>
   ): GalyleoDocument {
     const content = new GalyleoEditor({
       context: context,
       settings: this._settings
     });
     // this._documentManager.autosave = false;
+
     this._communicationsManager.addEditor(content);
     content.title.icon = <any>galyleoIcon;
     const origSave = context.save;
@@ -298,9 +184,8 @@ function activateGalyleo(
   translator: ITranslator,
   settings: ISettingRegistry
 ): void {
-  const modelFactory = new GalyleoModelFactory();
-  app.docRegistry.addModelFactory(<any>modelFactory);
   const sessionManager = app.serviceManager.sessions;
+
   if (!translator) {
     translator = nullTranslator;
   }
@@ -309,9 +194,6 @@ function activateGalyleo(
   if (translator.load) {
     trans = translator.load('jupyterlab');
   }
-
-  //app.docRegistry.addWidgetFactory()
-  // set up the file extension
 
   app.docRegistry.addFileType({
     name: 'Galyleo',
@@ -332,11 +214,12 @@ function activateGalyleo(
     fileTypes: ['Galyleo'],
     defaultRendered: ['Galyleo'],
     defaultFor: ['Galyleo'],
-    modelName: 'galyleo',
+    // modelName: 'galyleo',
     manager,
     commsManager: new GalyleoCommunicationsManager(sessionManager),
     settings
   });
+
 
   //const widgetTracker = new WidgetTracker({ namespace: 'galyleo' });
 
@@ -430,7 +313,7 @@ function activateGalyleo(
   };
 
   mainMenu.fileMenu.newMenu.addGroup([{ command: newCommand }], 30);
-  mainMenu.helpMenu.addGroup([helpCommand]);
+  // mainMenu.helpMenu.addGroup([helpCommand]);
 
   // Add the Galyleo Menu to the main menu
 
@@ -522,7 +405,7 @@ function activateGalyleo(
 }
 
 export const PLUGIN_ID =
-  '@jupyterlab/jupyterlab-universal-extension:galyleo-settings';
+'jupyterlab-universal-extension:galyleo-settings';
 
 /**
  * Initialization data for the ToC extension.
