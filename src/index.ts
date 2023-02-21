@@ -220,7 +220,6 @@ function activateGalyleo(
     settings
   });
 
-
   //const widgetTracker = new WidgetTracker({ namespace: 'galyleo' });
 
   widgetFactory.widgetCreated.connect((sender, widget) => {
@@ -404,8 +403,7 @@ function activateGalyleo(
   });
 }
 
-export const PLUGIN_ID =
-'jupyterlab-universal-extension:galyleo-settings';
+export const PLUGIN_ID = 'jupyterlab-universal-extension:galyleo-settings';
 
 /**
  * Initialization data for the ToC extension.

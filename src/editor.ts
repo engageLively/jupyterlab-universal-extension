@@ -155,28 +155,18 @@ export class GalyleoEditor extends Widget {
 
     // URLS by language and mode
 
+    const defaultUrls: languagePreferenceType = {
+      en: 'https://matt.engageLively.com/users/rick/published/studio-en/index.html?',
+      ja_JP:
+        'https://matt.engageLively.com/users/rick/published/studio-jp/index.html?',
+      'default':
+        'https://matt.engageLively.com/users/rick/published/studio-en/index.html?'
+    };
+
     const urls: modeType = {
-      deploy: {
-        en: 'https://matt.engageLively.com/users/rick/published/studio/index.html?',
-        ja_JP:
-          'https://matt.engageLively.com/users/rick/published/studio/index.html?',
-        'default':
-          'https://matt.engageLively.com/users/rick/published/studio/index.html?'
-      },
-      beta: {
-        en: 'https://matt.engageLively.com/users/rick/published/studio/index.html?',
-        ja_JP:
-          'https://matt.engageLively.com/users/rick/published/studio/index.html?',
-        'default':
-          'https://matt.engageLively.com/users/rick/published/studio/index.html?'
-      },
-      debug: {
-        en: 'https://matt.engageLively.com/worlds/load?name=Dashboard%20Studio%20Development&',
-        ja_JP:
-          'https://matt.engagelively.com/worlds/load?name=Dashboard%20Studio%20Development%E3%80%80JP&',
-        'default':
-          'https://matt.engageLively.com/users/rick/published/studio/index.html?'
-      }
+      deploy: defaultUrls,
+      beta: defaultUrls,
+      debug: defaultUrls
     };
 
     // read any set values
