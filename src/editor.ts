@@ -131,9 +131,11 @@ export class GalyleoEditor extends Widget {
       );
     }
 
+
     type languagePreferenceType = {
       en: string;
       ja_JP: string;
+      'default': string
     };
 
     type modeType = {
@@ -144,28 +146,30 @@ export class GalyleoEditor extends Widget {
 
     // Set up the defaults for language and mode
 
-    let preference: keyof languagePreferenceType = 'en';
-    let mode: keyof modeType = 'deploy';
+    const defaultPreference: keyof languagePreferenceType = 'en';
 
     // URLS by language and mode
 
-    const urls: modeType = {
-      deploy: {
-        en: 'https://matt.engageLively.com/users/rick/published/studio/index.html?',
-        ja_JP:
-          'https://matt.engageLively.com/users/rick/published/studio/index.html?'
-      },
-      beta: {
-        en: 'https://matt.engageLively.com/users/rick/published/studio/index.html?',
-        ja_JP:
-          'https://matt.engageLively.com/users/rick/published/studio/index.html?'
-      },
-      debug: {
-        en: 'https://matt.engageLively.com/worlds/load?name=Dashboard%20Studio%20Development&',
-        ja_JP:
-          'https://matt.engagelively.com/worlds/load?name=Dashboard%20Studio%20Development%E3%80%80JP&'
-      }
+    const defaultUrls: languagePreferenceType = {
+      en: 'https://matt.engageLively.com/users/rick/published/studio-en/index.html?',
+      ja_JP:
+        'https://matt.engageLively.com/users/rick/published/studio-jp/index.html?',
+      'default':
+        'https://matt.engageLively.com/users/rick/published/studio-en/index.html?'
     };
+
+    const urls: modeType = {
+      deploy: defaultUrls,
+      beta: defaultUrls,
+      debug: defaultUrls
+    };
+
+
+    // Set up the defaults for language and mode
+
+    let preference: keyof languagePreferenceType = 'en';
+    let mode: keyof modeType = 'deploy';
+
 
     // read any set values
 
@@ -177,6 +181,8 @@ export class GalyleoEditor extends Widget {
     if (languagePreference) {
       preference = languagePreference.get('locale')
         .composite as keyof languagePreferenceType;
+    } else {
+      preference = defaultPreference;
     }
     return urls[mode][preference];
   }
