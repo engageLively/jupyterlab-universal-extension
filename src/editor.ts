@@ -4,7 +4,7 @@
 import { Widget } from '@lumino/widgets';
 import { DocumentRegistry, DocumentWidget } from '@jupyterlab/docregistry';
 import { GalyleoModel } from './index';
-import { PLUGIN_ID } from './index';
+// import { PLUGIN_ID } from './index';
 // import { baseURL } from './constants';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { CodeEditor } from '@jupyterlab/codeeditor';
@@ -15,7 +15,7 @@ export class GalyleoDocument extends DocumentWidget<
 > {}
 
 // overwritten post-compile and pre-deploy.  DO NOT MODIFY IN THIS CODE!  See make.sh in the directory above
-const debugMode = false;
+// const debugMode = false;
 
 export class GalyleoEditor extends Widget {
   private _iframe: HTMLIFrameElement;
@@ -112,7 +112,51 @@ export class GalyleoEditor extends Widget {
     this._iframe.contentWindow?.postMessage({ method: 'galyleo:redo' }, '*');
   }
 
+  _getHubLocation(): string {
+    const location: string[] = document.location.href.split('/');
+    if (location.length < 3) {
+      return '';
+    }
+    const hostname: string = location[2].split(':')[0]; // strip off the port
+    const hubname: string = hostname.split('.')[0]; // the hostname is the first entry
+    return hubname;
+  }
+
   async _baseUrl(): Promise<string> {
+    let languagePreference: ISettingRegistry.ISettings = <
+      ISettingRegistry.ISettings
+    >(<unknown>undefined);
+    if (this._settings) {
+      languagePreference = await this._settings.load(
+        '@jupyterlab/translation-extension:plugin'
+      );
+    }
+    const host: string = this._getHubLocation();
+    const preference = languagePreference.get('locale').composite
+      ? languagePreference.get('locale').composite
+      : undefined;
+
+    const hubArgument: string = host.length > 0 ? `hub=${host}` : '';
+
+    const languageArgument: string = preference ? `language=${preference}` : '';
+
+    const base =
+      'https://publication-server-htztskumkq-uw.a.run.app/get_studio_url';
+    const tail =
+      hubArgument.length > 0 && languageArgument.length > 0
+        ? `?${hubArgument}&${languageArgument}`
+        : hubArgument.length > 0
+        ? `?${hubArgument}`
+        : languageArgument.length > 0
+        ? `?${languageArgument}`
+        : '';
+    const url = `${base}${tail}`;
+    const response = await fetch(url);
+    const responseURL = await response.text();
+    return `${responseURL}?`;
+  }
+
+  /* async _baseUrl(): Promise<string> {
     let galyleoSettings: ISettingRegistry.ISettings = <
       ISettingRegistry.ISettings
     >(<unknown>undefined);
@@ -186,6 +230,7 @@ export class GalyleoEditor extends Widget {
     }
     return urls[mode][preference];
   }
+  */
 
   async _render(): Promise<void> {
     // now set the src accordingly on the iframe....?
