@@ -2,7 +2,7 @@
 # jupyterlab_universal_extension
 
 [![Github Actions Status](https:://engageLively.com/jupyterlab-universal-extension/workflows/Build/badge.svg)](https:://engageLively.com/jupyterlab-universal-extension/actions/workflows/build.yml)
-A general plugin which permits a third-party editor to be integrated into JupyterLab, in a JupyterLab tab or tabs, and reading and writing the user's filesystem through JupyterLab
+A general plugin which permits a third-party editor to be integrated into JupyterLab, in a JupyterLab tab or tabs, and reading and writing the user's filesystem through  JupyterLab
 
 ## Requirements
 
